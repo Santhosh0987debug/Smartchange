@@ -1,9 +1,20 @@
 import axios, { AxiosError } from 'axios';
 
 /** Centralized API configuration. Same-origin by default (Vite dev proxies
- *  /api to the backend); override with VITE_API_BASE_URL for other setups. */
-export const API_BASE_URL: string =
-  import.meta.env.VITE_API_BASE_URL ?? '';
+ *  /api to the backend); override with VITE_API_BASE_URL for other setups.
+ *
+ *  Every endpoint path in this client already starts with `/api`, so the base
+ *  must be the backend *origin* (e.g. `https://smartchange.onrender.com`) —
+ *  never include an `/api` suffix, or requests become `/api/api/...` (404).
+ *  Trailing slashes and a trailing `/api` are stripped defensively so a
+ *  dashboard misconfiguration degrades into a working URL instead of 404s. */
+function normalizeBase(raw: string | undefined): string {
+  const base = (raw ?? '').trim().replace(/\/+$/, '');
+  if (/\/api$/i.test(base)) return base.slice(0, -'/api'.length);
+  return base;
+}
+
+export const API_BASE_URL: string = normalizeBase(import.meta.env.VITE_API_BASE_URL);
 
 export const api = axios.create({ baseURL: API_BASE_URL });
 
