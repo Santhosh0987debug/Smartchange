@@ -98,20 +98,25 @@ export default function MachinesPage() {
   const total: number = list.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const nameInvalid = editing !== null && !editing.name.trim();
+  const idInvalid = editing !== null && isNew && !editing.id.trim();
+
   return (
     <div className="space-y-3">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-2 flex-wrap mb-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Cog size={16} /> Machines ({total})
+      <div className="card">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <h3 className="card-title">
+            <Cog size={16} /> Machines
+            <span className="text-xs font-semibold rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-slate-300 tabular-nums">{total}</span>
           </h3>
           <button
             onClick={openNew}
-            className="ml-auto flex items-center gap-1 bg-amber-400 text-slate-950 font-semibold rounded-lg px-3 py-1.5 text-sm"
+            className="btn btn-primary ml-auto text-sm"
           >
             <Plus size={15} /> Add machine
           </button>
         </div>
+        <p className="card-sub mb-3">Fleet registry with live status. Deletes are guarded while history references a machine.</p>
         <div className="flex gap-2 flex-wrap mb-3">
           <div className="relative flex-1 min-w-40">
             <Search size={14} className="absolute left-2.5 top-2.5 text-slate-500" />
@@ -123,7 +128,7 @@ export default function MachinesPage() {
               }}
               placeholder="Search ID, name, line, location…"
               aria-label="Search machines"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-8 pr-2 py-1.5 text-sm"
+              className="input !pl-8"
             />
           </div>
           <select
@@ -133,7 +138,7 @@ export default function MachinesPage() {
               setPage(1);
             }}
             aria-label="Filter by status"
-            className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"
+            className="input !w-auto"
           >
             <option value="">All statuses</option>
             {MANAGED_STATUSES.map((s) => (
@@ -150,7 +155,7 @@ export default function MachinesPage() {
             }}
             placeholder="Line filter…"
             aria-label="Filter by line"
-            className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm w-32"
+            className="input !w-32"
           />
         </div>
 
@@ -160,36 +165,36 @@ export default function MachinesPage() {
           <EmptyState title="No machines match" detail="Adjust the search or add a new machine." />
         )}
         {items.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="table-wrap border border-slate-800 rounded-lg overflow-hidden">
+            <table className="grid-table">
               <thead>
-                <tr className="text-left text-slate-400 text-xs uppercase">
-                  <th className="pr-3 py-1">ID</th>
-                  <th className="pr-3">Name</th>
-                  <th className="pr-3">Type</th>
-                  <th className="pr-3">Line</th>
-                  <th className="pr-3">Status</th>
-                  <th className="pr-3">Product</th>
-                  <th className="text-right">Actions</th>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Line</th>
+                  <th>Status</th>
+                  <th>Product</th>
+                  <th className="!text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((m) => (
-                  <tr key={m.id} className="border-t border-slate-800">
-                    <td className="pr-3 py-1.5 font-mono">{m.id}</td>
-                    <td className="pr-3">{m.name}</td>
-                    <td className="pr-3 text-slate-400">{m.machine_type ?? '—'}</td>
-                    <td className="pr-3 text-slate-400">{m.line ?? '—'}</td>
-                    <td className="pr-3">
+                  <tr key={m.id}>
+                    <td className="font-mono font-semibold">{m.id}</td>
+                    <td>{m.name}</td>
+                    <td className="text-slate-400">{m.machine_type ?? '—'}</td>
+                    <td className="text-slate-400">{m.line ?? '—'}</td>
+                    <td>
                       <StatusBadge value={m.status} />
                     </td>
-                    <td className="pr-3 text-slate-400">{m.current_product_id ?? '—'}</td>
+                    <td className="text-slate-400 font-mono text-xs">{m.current_product_id ?? '—'}</td>
                     <td className="text-right whitespace-nowrap">
                       <button
                         onClick={() => setViewId(m.id)}
                         title={`View ${m.id}`}
                         aria-label={`View ${m.id}`}
-                        className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                        className="icon-btn"
                       >
                         <Eye size={15} />
                       </button>
@@ -197,7 +202,7 @@ export default function MachinesPage() {
                         onClick={() => openEdit(m)}
                         title={`Edit ${m.id}`}
                         aria-label={`Edit ${m.id}`}
-                        className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                        className="icon-btn"
                       >
                         <Pencil size={15} />
                       </button>
@@ -208,7 +213,7 @@ export default function MachinesPage() {
                         }}
                         title={`Delete ${m.id}`}
                         aria-label={`Delete ${m.id}`}
-                        className="p-1.5 rounded hover:bg-slate-800 text-red-300"
+                        className="icon-btn danger"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -243,38 +248,47 @@ export default function MachinesPage() {
       </div>
 
       {viewId && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="card rise-in">
           {detail.isLoading && <Loading label="Loading machine…" />}
           {detail.isError && <ErrorState error={detail.error} onRetry={() => detail.refetch()} />}
           {detail.data && (
             <div className="text-sm">
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <h3 className="font-semibold text-base">
-                  {detail.data.id} · {detail.data.name}
+                <h3 className="font-semibold text-base tracking-tight">
+                  <span className="font-mono">{detail.data.id}</span>
+                  <span className="text-slate-500 font-normal"> · {detail.data.name}</span>
                 </h3>
                 <StatusBadge value={detail.data.status} />
                 <button
                   onClick={() => setViewId(null)}
-                  className="ml-auto text-xs text-slate-400 hover:text-slate-200"
+                  className="ml-auto text-xs text-slate-400 hover:text-slate-200 btn btn-ghost !py-1"
                 >
                   Close
                 </button>
               </div>
-              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-slate-300">
-                <div>Type: {detail.data.machine_type ?? '—'}</div>
-                <div>Line: {detail.data.line ?? '—'}</div>
-                <div>Location: {detail.data.location ?? '—'}</div>
-                <div>Current product: {detail.data.current_product_id ?? '—'}</div>
-                <div>Config version: v{detail.data.configuration_version}</div>
-                <div className="text-xs text-slate-500">
-                  Created {detail.data.created_at ?? '—'} · Updated {detail.data.updated_at ?? '—'}
-                </div>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {[
+                  ['Type', detail.data.machine_type ?? '—'],
+                  ['Line', detail.data.line ?? '—'],
+                  ['Location', detail.data.location ?? '—'],
+                  ['Current product', detail.data.current_product_id ?? '—'],
+                  ['Config version', `v${detail.data.configuration_version}`],
+                  ['Updated', detail.data.updated_at ?? '—'],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-lg border border-slate-800 bg-slate-800/40 px-2.5 py-1.5 flex justify-between gap-2">
+                    <span className="text-slate-500 text-xs">{k}</span>
+                    <span className="text-slate-200 text-[13px] font-medium text-right">{v}</span>
+                  </div>
+                ))}
               </div>
               {detail.data.latest_state && (
-                <div className="mt-2 text-xs text-slate-400">
-                  Latest state: product {detail.data.latest_state.product_id} ·{' '}
-                  {detail.data.latest_state.verification_status} · params{' '}
-                  {JSON.stringify(detail.data.latest_state.parameters)}
+                <div className="mt-2 rounded-lg border border-slate-800 bg-slate-800/40 p-2.5 text-xs text-slate-400">
+                  <span className="eyebrow block mb-1">Latest verified state</span>
+                  Product <b className="font-mono text-slate-200">{detail.data.latest_state.product_id}</b> ·{' '}
+                  <b className="text-slate-200">{detail.data.latest_state.verification_status}</b>
+                  <pre className="mt-1 whitespace-pre-wrap font-mono text-[11px] text-slate-400">
+                    {JSON.stringify(detail.data.latest_state.parameters, null, 1)}
+                  </pre>
                 </div>
               )}
             </div>
@@ -291,16 +305,20 @@ export default function MachinesPage() {
               onChange={(e) => setEditing({ ...editing, id: e.target.value })}
               disabled={!isNew}
               placeholder="e.g. FILL-03"
+              aria-invalid={idInvalid}
               className={`${inputCls} ${isNew ? '' : 'opacity-60'}`}
             />
+            {idInvalid && <span className="field-hint !text-red-300">Machine ID is required.</span>}
           </Field>
           <Field label="Name (required)">
             <input
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
               placeholder="e.g. Filling Machine 03"
+              aria-invalid={nameInvalid}
               className={inputCls}
             />
+            {nameInvalid && <span className="field-hint !text-red-300">Name is required.</span>}
           </Field>
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Machine type">
@@ -359,7 +377,7 @@ export default function MachinesPage() {
             <button
               onClick={() => save.mutate()}
               disabled={save.isPending || !editing.name.trim() || (isNew && !editing.id.trim())}
-              className="bg-amber-400 text-slate-950 font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-50"
+              className="btn btn-primary text-sm disabled:opacity-50"
             >
               {save.isPending ? 'Saving…' : isNew ? 'Create' : 'Save'}
             </button>

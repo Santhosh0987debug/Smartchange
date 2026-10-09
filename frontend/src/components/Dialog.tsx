@@ -30,11 +30,11 @@ export function Modal({
     >
       <button
         aria-label="Close dialog"
-        className="absolute inset-0 bg-black/60 cursor-default"
+        className="overlay-in absolute inset-0 bg-black/65 backdrop-blur-[2px] cursor-default"
         onClick={onClose}
       />
       <div
-        className={`relative w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-xl p-5`}
+        className={`modal-in relative w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto bg-[#101a30] border border-slate-700 rounded-xl p-5 shadow-2xl`}
       >
         <div className="flex items-center gap-2 mb-4">
           <h3 className="font-semibold text-lg">{title}</h3>

@@ -7,15 +7,18 @@ import App from './App.tsx';
 import { queryClient } from './queries';
 import { UserProvider } from './user';
 import { ErrorBoundary } from './components/ErrorState';
+import { ToastProvider } from './components/Toast';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <UserProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <ToastProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ToastProvider>
         </UserProvider>
       </QueryClientProvider>
     </ErrorBoundary>

@@ -44,17 +44,21 @@ export default function HistoryPage() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-      <div className="flex items-center gap-2 flex-wrap mb-3">
-        <h3 className="font-semibold">Changeover history ({total})</h3>
+    <div className="card">
+      <div className="flex items-center gap-2 flex-wrap mb-1">
+        <h3 className="card-title">
+          Changeover history
+          <span className="text-xs font-semibold rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-slate-300 tabular-nums">{total}</span>
+        </h3>
         <a
           href={reportUrl('/api/reports/changeovers', filters)}
           download
-          className="ml-auto flex items-center gap-1 bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1.5 text-sm"
+          className="btn btn-ghost ml-auto text-sm"
         >
           <Download size={14} /> Export CSV (filtered)
         </a>
       </div>
+      <p className="card-sub mb-3">Persisted runs with verification outcomes. Every row opens in the execution workspace.</p>
       <div className="flex gap-2 flex-wrap mb-3">
         <div className="relative flex-1 min-w-40">
           <Search size={14} className="absolute left-2.5 top-2.5 text-slate-500" />
@@ -66,31 +70,31 @@ export default function HistoryPage() {
             }}
             placeholder="Search machine, operator…"
             aria-label="Search history"
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-8 pr-2 py-1.5 text-sm"
+            className="input !pl-8"
           />
         </div>
-        <select value={status} onChange={(e) => { setStatus(e.target.value); resetPage(); }} aria-label="Filter by status" className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm">
+        <select value={status} onChange={(e) => { setStatus(e.target.value); resetPage(); }} aria-label="Filter by status" className="input !w-auto">
           <option value="">All statuses</option>
           <option value="IN_PROGRESS">In progress</option>
           <option value="COMPLETED">Completed</option>
           <option value="FAILED">Failed</option>
           <option value="ABANDONED">Abandoned</option>
         </select>
-        <select value={machineId} onChange={(e) => { setMachineId(e.target.value); resetPage(); }} aria-label="Filter by machine" className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm">
+        <select value={machineId} onChange={(e) => { setMachineId(e.target.value); resetPage(); }} aria-label="Filter by machine" className="input !w-auto">
           <option value="">All machines</option>
           {(machines.data?.items ?? []).map((m: { id: string }) => (
             <option key={m.id} value={m.id}>{m.id}</option>
           ))}
         </select>
-        <select value={productId} onChange={(e) => { setProductId(e.target.value); resetPage(); }} aria-label="Filter by product" className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm">
+        <select value={productId} onChange={(e) => { setProductId(e.target.value); resetPage(); }} aria-label="Filter by product" className="input !w-auto">
           <option value="">All products</option>
           {(products.data?.items ?? []).map((p: { id: string }) => (
             <option key={p.id} value={p.id}>{p.id}</option>
           ))}
         </select>
-        <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); resetPage(); }} aria-label="From date" className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm" />
-        <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); resetPage(); }} aria-label="To date" className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm" />
-        <button onClick={() => setSort(sort === '-started_at' ? 'started_at' : '-started_at')} title="Toggle start-time sort" className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-sm">
+        <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); resetPage(); }} aria-label="From date" className="input !w-auto" />
+        <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); resetPage(); }} aria-label="To date" className="input !w-auto" />
+        <button onClick={() => setSort(sort === '-started_at' ? 'started_at' : '-started_at')} title="Toggle start-time sort" className="btn btn-ghost text-sm">
           <ArrowUpDown size={13} /> {sort === '-started_at' ? 'Newest' : 'Oldest'}
         </button>
       </div>
@@ -101,50 +105,52 @@ export default function HistoryPage() {
         <EmptyState title="No changeovers match" detail="Adjust filters — records persist even after machines or products are edited." />
       )}
       {items.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="table-wrap border border-slate-800 rounded-lg overflow-hidden">
+          <table className="grid-table">
             <thead>
-              <tr className="text-left text-slate-400 text-xs uppercase">
-                <th className="pr-3 py-1">ID</th>
-                <th className="pr-3">Machine</th>
-                <th className="pr-3">Route</th>
-                <th className="pr-3">Status</th>
-                <th className="pr-3">Started</th>
-                <th className="pr-3">Duration</th>
-                <th className="pr-3">Changes</th>
-                <th className="pr-3">Verification</th>
-                <th className="pr-3">Issues</th>
-                <th className="text-right">Detail</th>
+              <tr>
+                <th>ID</th>
+                <th>Machine</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Duration</th>
+                <th>Changes</th>
+                <th>Verification</th>
+                <th>Issues</th>
+                <th className="!text-right">Detail</th>
               </tr>
             </thead>
             <tbody>
               {items.map((h) => (
-                <tr key={h.id} className="border-t border-slate-800">
-                  <td className="pr-3 py-1">#{h.id}</td>
-                  <td className="pr-3">{h.machine_id}</td>
-                  <td className="pr-3">
+                <tr key={h.id}>
+                  <td className="font-mono">#{h.id}</td>
+                  <td className="font-mono font-semibold">{h.machine_id}</td>
+                  <td className="whitespace-nowrap">
                     {h.source} → {h.target}
                   </td>
-                  <td className="pr-3">
-                    <StatusBadge value={h.status} />
-                    {h.simulated && (
-                      <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-900 text-violet-200">
-                        simulated
-                      </span>
-                    )}
+                  <td>
+                    <span className="inline-flex items-center gap-1">
+                      <StatusBadge value={h.status} />
+                      {h.simulated && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-950/70 border border-violet-800 text-violet-200 font-semibold">
+                          simulated
+                        </span>
+                      )}
+                    </span>
                   </td>
-                  <td className="pr-3 text-xs text-slate-400">{h.started_at}</td>
-                  <td className="pr-3 text-xs">
+                  <td className="text-xs text-slate-400 tabular-nums whitespace-nowrap">{h.started_at}</td>
+                  <td className="text-xs tabular-nums whitespace-nowrap">
                     {h.actual_duration_seconds != null ? `${h.actual_duration_seconds}s` : '—'}
                     <span className="text-slate-500"> (est plan, base {h.baseline_duration_seconds}s)</span>
                   </td>
-                  <td className="pr-3">{h.changes}</td>
-                  <td className="pr-3">
+                  <td className="tabular-nums">{h.changes}</td>
+                  <td>
                     <StatusBadge value={h.verification === 'NOT_RUN' ? 'PENDING' : h.verification} />
                   </td>
-                  <td className="pr-3">{h.issues_open}</td>
+                  <td className="tabular-nums">{h.issues_open}</td>
                   <td className="text-right">
-                    <Link to={`/changeovers/${h.id}`} className="text-amber-300 hover:text-amber-200 text-xs">
+                    <Link to={`/changeovers/${h.id}`} className="btn btn-ghost !px-2.5 !py-1 text-xs">
                       Open →
                     </Link>
                   </td>

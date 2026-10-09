@@ -169,20 +169,26 @@ export default function ProductsPage() {
   const total: number = list.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const nameInvalid = editing !== null && !editing.name.trim();
+  const codeInvalid = editing !== null && !editing.product_code.trim();
+  const idInvalid = editing !== null && isNew && !editing.id.trim();
+
   return (
     <div className="space-y-3">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-2 flex-wrap mb-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Package size={16} /> Products ({total})
+      <div className="card">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <h3 className="card-title">
+            <Package size={16} /> Products
+            <span className="text-xs font-semibold rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-slate-300 tabular-nums">{total}</span>
           </h3>
           <button
             onClick={openNew}
-            className="ml-auto flex items-center gap-1 bg-amber-400 text-slate-950 font-semibold rounded-lg px-3 py-1.5 text-sm"
+            className="btn btn-primary ml-auto text-sm"
           >
             <Plus size={15} /> Add product
           </button>
         </div>
+        <p className="card-sub mb-3">Approved setup configurations (RPM / °C / bar / ml). Inactive products are preserved but hidden from targets.</p>
         <div className="flex gap-2 flex-wrap mb-3">
           <div className="relative flex-1 min-w-40">
             <Search size={14} className="absolute left-2.5 top-2.5 text-slate-500" />
@@ -194,7 +200,7 @@ export default function ProductsPage() {
               }}
               placeholder="Search ID, code, name…"
               aria-label="Search products"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-8 pr-2 py-1.5 text-sm"
+              className="input !pl-8"
             />
           </div>
           <select
@@ -204,7 +210,7 @@ export default function ProductsPage() {
               setPage(1);
             }}
             aria-label="Filter by status"
-            className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"
+            className="input !w-auto"
           >
             <option value="">All statuses</option>
             <option value="true">Active</option>
@@ -218,40 +224,40 @@ export default function ProductsPage() {
           <EmptyState title="No products match" detail="Adjust the search or add a new product." />
         )}
         {items.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="table-wrap border border-slate-800 rounded-lg overflow-hidden">
+            <table className="grid-table">
               <thead>
-                <tr className="text-left text-slate-400 text-xs uppercase">
-                  <th className="pr-3 py-1">ID</th>
-                  <th className="pr-3">Code / SKU</th>
-                  <th className="pr-3">Name</th>
-                  <th className="pr-3">Setup</th>
-                  <th className="pr-3">Status</th>
-                  <th className="pr-3">Rev</th>
-                  <th className="text-right">Actions</th>
+                <tr>
+                  <th>ID</th>
+                  <th>Code / SKU</th>
+                  <th>Name</th>
+                  <th>Setup</th>
+                  <th>Status</th>
+                  <th>Rev</th>
+                  <th className="!text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((p) => {
                   const params = (p.configuration.parameters ?? {}) as Record<string, number>;
                   return (
-                    <tr key={p.id} className="border-t border-slate-800">
-                      <td className="pr-3 py-1.5 font-mono">{p.id}</td>
-                      <td className="pr-3 font-mono text-xs">{p.product_code}</td>
-                      <td className="pr-3">{p.name}</td>
-                      <td className="pr-3 text-xs text-slate-400">
+                    <tr key={p.id}>
+                      <td className="font-mono font-semibold">{p.id}</td>
+                      <td className="font-mono text-xs">{p.product_code}</td>
+                      <td>{p.name}</td>
+                      <td className="text-xs text-slate-400 tabular-nums whitespace-nowrap">
                         {params.speed_rpm} RPM · {params.temperature_c}°C · {params.pressure_bar} bar
                       </td>
-                      <td className="pr-3">
+                      <td>
                         <StatusBadge value={p.active ? 'Active' : 'Inactive'} />
                       </td>
-                      <td className="pr-3 text-xs text-slate-400">{p.revision}</td>
+                      <td className="text-xs text-slate-400 font-mono">{p.revision}</td>
                       <td className="text-right whitespace-nowrap">
                         <button
                           onClick={() => setViewId(p.id)}
                           title={`View ${p.id}`}
                           aria-label={`View ${p.id}`}
-                          className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                          className="icon-btn"
                         >
                           <Eye size={15} />
                         </button>
@@ -259,7 +265,7 @@ export default function ProductsPage() {
                           onClick={() => openEdit(p)}
                           title={`Edit ${p.id}`}
                           aria-label={`Edit ${p.id}`}
-                          className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                          className="icon-btn"
                         >
                           <Pencil size={15} />
                         </button>
@@ -270,7 +276,7 @@ export default function ProductsPage() {
                           }}
                           title={`Delete ${p.id}`}
                           aria-label={`Delete ${p.id}`}
-                          className="p-1.5 rounded hover:bg-slate-800 text-red-300"
+                          className="icon-btn danger"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -306,38 +312,39 @@ export default function ProductsPage() {
       </div>
 
       {viewId && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="card rise-in">
           {detail.isLoading && <Loading label="Loading product…" />}
           {detail.isError && <ErrorState error={detail.error} onRetry={() => detail.refetch()} />}
           {detail.data && (
             <div className="text-sm">
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <h3 className="font-semibold text-base">
-                  {detail.data.id} · {detail.data.name}
+                <h3 className="font-semibold text-base tracking-tight">
+                  <span className="font-mono">{detail.data.id}</span>
+                  <span className="text-slate-500 font-normal"> · {detail.data.name}</span>
                 </h3>
                 <StatusBadge value={detail.data.active ? 'Active' : 'Inactive'} />
                 <button
                   onClick={() => setViewId(null)}
-                  className="ml-auto text-xs text-slate-400 hover:text-slate-200"
+                  className="ml-auto text-xs btn btn-ghost !py-1"
                 >
                   Close
                 </button>
               </div>
               <div className="text-slate-300 mb-2">
                 {detail.data.description || 'No description.'}{' '}
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 font-mono">
                   {detail.data.product_code} · {detail.data.revision}
                 </span>
               </div>
               <div className="grid sm:grid-cols-2 gap-2">
-                <div className="bg-slate-800 rounded-lg p-2.5">
-                  <div className="text-xs text-slate-400 mb-1">Components</div>
-                  <pre className="text-xs whitespace-pre-wrap">
+                <div className="rounded-lg border border-slate-800 bg-slate-800/50 p-2.5">
+                  <div className="eyebrow mb-1">Components</div>
+                  <pre className="text-xs whitespace-pre-wrap font-mono">
                     {JSON.stringify(detail.data.configuration.components, null, 1)}
                   </pre>
                 </div>
-                <div className="bg-slate-800 rounded-lg p-2.5">
-                  <div className="text-xs text-slate-400 mb-1">Parameters &amp; ranges</div>
+                <div className="rounded-lg border border-slate-800 bg-slate-800/50 p-2.5">
+                  <div className="eyebrow mb-1">Parameters &amp; ranges</div>
                   <pre className="text-xs whitespace-pre-wrap">
                     {JSON.stringify(
                       {
@@ -366,16 +373,20 @@ export default function ProductsPage() {
                 onChange={(e) => setEditing({ ...editing, id: e.target.value })}
                 disabled={!isNew}
                 placeholder="e.g. D"
+                aria-invalid={idInvalid}
                 className={`${inputCls} ${isNew ? '' : 'opacity-60'}`}
               />
+              {idInvalid && <span className="field-hint !text-red-300">Product ID is required.</span>}
             </Field>
             <Field label="Product code / SKU (required, unique)">
               <input
                 value={editing.product_code}
                 onChange={(e) => setEditing({ ...editing, product_code: e.target.value })}
                 placeholder="e.g. PROD-D"
+                aria-invalid={codeInvalid}
                 className={inputCls}
               />
+              {codeInvalid && <span className="field-hint !text-red-300">Product code is required and must be unique.</span>}
             </Field>
           </div>
           <Field label="Name (required)">
@@ -383,8 +394,10 @@ export default function ProductsPage() {
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
               placeholder="e.g. Product D — Trial 300 ml"
+              aria-invalid={nameInvalid}
               className={inputCls}
             />
+            {nameInvalid && <span className="field-hint !text-red-300">Name is required.</span>}
           </Field>
           <Field label="Description">
             <input
@@ -486,7 +499,7 @@ export default function ProductsPage() {
                 !editing.product_code.trim() ||
                 (isNew && !editing.id.trim())
               }
-              className="bg-amber-400 text-slate-950 font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-50"
+              className="btn btn-primary text-sm disabled:opacity-50"
             >
               {save.isPending ? 'Saving…' : isNew ? 'Create' : 'Save'}
             </button>

@@ -89,14 +89,15 @@ export default function DocumentsPage() {
   return (
     <div className="space-y-3">
       {/* Upload */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <h3 className="font-semibold mb-1 flex items-center gap-2">
-          <Upload size={16} /> Upload document (PDF or TXT, max 5 MB)
-        </h3>
-        <div className="text-xs text-slate-400 mb-2">
+      <div className="card">
+        <div className="card-title mb-0.5">
+          <Upload size={16} /> Upload document
+          <span className="eyebrow ml-auto">PDF or TXT · max 5 MB</span>
+        </div>
+        <p className="card-sub mb-2">
           Uploads start as <b>Draft</b> — only <b>Approved</b> documents answer operator questions.
           Files are parsed to text and never stored or executed.
-        </div>
+        </p>
         {uploadError && <div className="text-sm text-red-300 mb-2">{uploadError}</div>}
         <div className="grid sm:grid-cols-2 gap-3">
           <Field label="File (PDF/TXT)">
@@ -125,17 +126,20 @@ export default function DocumentsPage() {
         <button
           onClick={() => upload.mutate()}
           disabled={upload.isPending || !file || !title.trim()}
-          className="bg-amber-400 text-slate-950 font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-50"
+          className="btn btn-primary text-sm disabled:opacity-50"
         >
           {upload.isPending ? 'Uploading…' : 'Upload as Draft'}
         </button>
+        {!file && <span className="field-hint">Select a PDF or TXT file and enter a title to enable upload.</span>}
       </div>
 
       {/* Listing */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
-          <BookOpen size={15} /> Documents ({total})
-        </h3>
+      <div className="card">
+        <div className="card-title mb-0.5">
+          <BookOpen size={15} /> Documents
+          <span className="text-xs font-semibold rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-slate-300 tabular-nums">{total}</span>
+        </div>
+        <p className="card-sub mb-2">Draft → Approved → Archived workflow with full-text retrieval.</p>
         <div className="flex gap-2 flex-wrap mb-3">
           <div className="relative flex-1 min-w-40">
             <Search size={14} className="absolute left-2.5 top-2.5 text-slate-500" />
@@ -147,7 +151,7 @@ export default function DocumentsPage() {
               }}
               placeholder="Search title, description…"
               aria-label="Search documents"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-8 pr-2 py-1.5 text-sm"
+              className="input !pl-8"
             />
           </div>
           <select
@@ -157,7 +161,7 @@ export default function DocumentsPage() {
               setPage(1);
             }}
             aria-label="Filter by approval status"
-            className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm"
+            className="input !w-auto"
           >
             <option value="">All statuses</option>
             <option value="Draft">Draft</option>
@@ -172,7 +176,7 @@ export default function DocumentsPage() {
             }}
             placeholder="Category…"
             aria-label="Filter by category"
-            className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm w-32"
+            className="input !w-32"
           />
         </div>
         {actionError && <div className="text-sm text-red-300 mb-2">{actionError}</div>}
@@ -180,31 +184,31 @@ export default function DocumentsPage() {
         {list.isError && <ErrorState error={list.error} onRetry={() => list.refetch()} />}
         {list.data && items.length === 0 && <EmptyState title="No documents match" />}
         {items.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="table-wrap border border-slate-800 rounded-lg overflow-hidden">
+            <table className="grid-table">
               <thead>
-                <tr className="text-left text-slate-400 text-xs uppercase">
-                  <th className="pr-3 py-1">Title</th>
-                  <th className="pr-3">Category</th>
-                  <th className="pr-3">Rev</th>
-                  <th className="pr-3">Status</th>
-                  <th className="pr-3">Size</th>
-                  <th className="text-right">Actions</th>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Rev</th>
+                  <th>Status</th>
+                  <th>Size</th>
+                  <th className="!text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((d) => (
-                  <tr key={d.id} className="border-t border-slate-800">
-                    <td className="pr-3 py-1.5">
+                  <tr key={d.id}>
+                    <td>
                       <div className="font-medium">{d.title}</div>
                       <div className="text-xs text-slate-500">{d.preview.slice(0, 90)}…</div>
                     </td>
-                    <td className="pr-3 text-slate-400 text-xs">{d.category ?? '—'}</td>
-                    <td className="pr-3 text-xs text-slate-400">{d.revision}</td>
-                    <td className="pr-3">
+                    <td className="text-slate-400 text-xs">{d.category ?? '—'}</td>
+                    <td className="text-xs text-slate-400 font-mono">{d.revision}</td>
+                    <td>
                       <StatusBadge value={d.approval_status} />
                     </td>
-                    <td className="pr-3 text-xs text-slate-400">
+                    <td className="text-xs text-slate-400 tabular-nums">
                       {d.size_bytes != null ? `${(d.size_bytes / 1024).toFixed(1)} KB` : '—'}
                     </td>
                     <td className="text-right whitespace-nowrap">
@@ -212,7 +216,7 @@ export default function DocumentsPage() {
                         onClick={() => openPreview(d.id)}
                         title="Preview extracted text"
                         aria-label={`Preview ${d.title}`}
-                        className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                        className="icon-btn"
                       >
                         <Eye size={15} />
                       </button>
@@ -224,9 +228,9 @@ export default function DocumentsPage() {
                           }}
                           title="Approve"
                           aria-label={`Approve ${d.title}`}
-                          className="p-1.5 rounded hover:bg-slate-800 text-emerald-300"
+                          className="icon-btn"
                         >
-                          <CheckCircle2 size={15} />
+                          <CheckCircle2 size={15} className="text-emerald-300" />
                         </button>
                       )}
                       {d.approval_status === 'Approved' && (
@@ -237,7 +241,7 @@ export default function DocumentsPage() {
                           }}
                           title="Archive"
                           aria-label={`Archive ${d.title}`}
-                          className="p-1.5 rounded hover:bg-slate-800 text-slate-300"
+                          className="icon-btn"
                         >
                           <Archive size={15} />
                         </button>

@@ -12,10 +12,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-3 max-w-3xl">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
+      <div className="card">
+        <div className="card-title mb-2">
           <SettingsIcon size={16} /> Environment
-        </h3>
+        </div>
         <dl className="text-sm space-y-1.5">
           <div className="flex gap-2">
             <dt className="text-slate-400 w-40 shrink-0">API base URL</dt>
@@ -41,8 +41,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <h3 className="font-semibold mb-2">Demo users</h3>
+      <div className="card">
+        <div className="card-title mb-2">Demo users</div>
         {usersQuery.isLoading && <Loading label="Loading users…" />}
         {usersQuery.isError && (
           <ErrorState error={usersQuery.error} onRetry={() => usersQuery.refetch()} />
@@ -60,8 +60,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-300">
-        <h3 className="font-semibold mb-1">Prototype scope</h3>
+      <div className="card text-sm text-slate-300">
+        <div className="card-title mb-1">Prototype scope</div>
         <p>
           SmartChange Phase 1 provides the application foundation: routing, data layer, database
           with migrations, and seed data. It does not control real machinery, and READY status from
