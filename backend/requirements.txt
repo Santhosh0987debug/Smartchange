@@ -4,5 +4,6 @@ sqlalchemy==2.1.4
 pydantic==2.13.4
 alembic==1.20.0
 pypdf==6.20.0
+python-multipart==0.0.32
 pytest==8.4.2
 httpx==0.28.1
