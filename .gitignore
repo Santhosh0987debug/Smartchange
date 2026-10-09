@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Databases (local dev artefacts)
+*.db
+*.db-journal
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Env with real values (examples are committed)
+.env
+!.env.example
+backend/.env
+frontend/.env
+
+# Misc
+.pytest_cache/
+*.log
+.vscode/
+.idea
+.DS_Store
