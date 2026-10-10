@@ -1,4 +1,4 @@
-"""SmartChange FastAPI backend — all state changes validated server-side."""
+
 import io
 import json
 import os
@@ -22,7 +22,37 @@ from .providers import provider_status, generate, ProviderError
 from .assistant import answer as assistant_answer
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
-app.add_middleware(CORSMiddleware, allow_origins=FRONTEND_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+
+# CORS: keep existing configured origins and explicitly allow the current
+# SmartChange Vercel deployment. Origins must not include a trailing slash.
+VERCEL_FRONTEND_ORIGIN = (
+    "https://smartchange-re4kljqfl-santhoshsivam613-3356s-projects.vercel.app"
+)
+
+if isinstance(FRONTEND_ORIGINS, str):
+    configured_origins = [
+        origin.strip().rstrip("/")
+        for origin in FRONTEND_ORIGINS.split(",")
+        if origin.strip()
+    ]
+else:
+    configured_origins = [
+        str(origin).strip().rstrip("/")
+        for origin in FRONTEND_ORIGINS
+        if str(origin).strip()
+    ]
+
+allowed_origins = list(dict.fromkeys(
+    configured_origins + [VERCEL_FRONTEND_ORIGIN]
+))
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ---------- helpers ----------
